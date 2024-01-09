@@ -1,0 +1,5 @@
+keyboard
+pynput
+pywin32
+requests
+
