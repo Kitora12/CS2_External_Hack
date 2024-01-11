@@ -5,7 +5,7 @@ from random import uniform
 from src.offsetDumper import Offsets
 import pyMeow as pm
 
-class TriggerBot:
+class AimBot:
     def __init__(self):
         self.active = False
         self.trigger_key = "x"
@@ -17,11 +17,7 @@ class TriggerBot:
         self.active = not self.active
 
     def set_trigger_key(self, new_key):
-        if new_key and isinstance(new_key, str) and len(new_key) > 0:
-            self.trigger_key = new_key
-        else:
-            print("Invalid key provided for TriggerBot")
-
+        self.trigger_key = new_key
 
     def run(self):
         while True:

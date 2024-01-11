@@ -7,35 +7,39 @@ class DefuseBot:
         self.active = False
         self.proc = pm.open_process("cs2.exe")
         self.mod = pm.get_module(self.proc, "client.dll")["base"]
-
+        self.planted = False
+        self.plant_time = 0
+    
     def toggle(self):
         self.active = not self.active
 
+    def is_bomb_planted(self):
+        planted_address = self.mod + Offsets.dwPlantedC4 - 0x8
+        is_planted = pm.r_bool(self.proc, planted_address)
+        return is_planted
+
+    def get_bomb_site(self):
+        c_planted_c4_ptr = pm.r_int64(self.proc, self.mod + Offsets.dwPlantedC4)
+        if c_planted_c4_ptr != 0:
+            offset_address = c_planted_c4_ptr + Offsets.m_bBeingDefused
+            print(f"Address to read: {offset_address}")
+            pm.r_bool(self.proc, offset_address)
+        return None
+
     def run(self):
         while True:
-            if not self.active:
-                time.sleep(0.1)
-                continue
-            ent_list = pm.r_int64(self.proc, self.mod + Offsets.dwEntityList)
-            for i in range(1, 65):
-                bomb_ptr = pm.r_int64(self.proc, ent_list + i * 0x10)
-                if bomb_ptr == 0:
-                    continue
-                planted = pm.r_bool(self.proc, bomb_ptr + Offsets.m_bC4Activated)
-                bomb_defused = pm.r_bool(self.proc, bomb_ptr + Offsets.m_bBombDefused)
-                bomb_exploded = pm.r_bool(self.proc, bomb_ptr + Offsets.m_bHasExploded)
-                
-                if planted and not bomb_defused and not bomb_exploded:
-                    being_defused = pm.r_bool(self.proc, bomb_ptr + Offsets.m_bBeingDefused)
-                    bomb_site = pm.r_int(self.proc, bomb_ptr + Offsets.m_nBombSite)
-                    site = "B" if bomb_site > 0 else "A"
-                    defusing_message = "Defusing: " if being_defused else "Waiting for defuse: "
-                    print(f"Bomb planted on: {site}\n{defusing_message}")
-                elif bomb_defused:
-                    print("Bomb Defused!")
-                    break
-                elif bomb_exploded:
-                    print("Bomb Exploded!")
-                    break
+            is_bomb_planted = self.is_bomb_planted()
+            current_time = time.time() * 1000
 
+            if is_bomb_planted and (not self.planted or current_time - self.plant_time > 60000):
+                self.planted = True
+                self.plant_time = current_time
+
+            remaining = (40000 - (current_time - self.plant_time)) / 1000
+
+            if self.planted:
+                print(f"Bomb on planted: {remaining:.3f} s")
+            else:
+                print("C4 not planted")
+            
             time.sleep(1)
