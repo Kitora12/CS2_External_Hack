@@ -14,6 +14,7 @@ class CS2Esp:
         self.show_weapon = True
         self.show_skeleton = True
         self.show_head = True
+        self.localTeam = None
 
     def toggle(self):
         self.active = not self.active
@@ -38,35 +39,43 @@ class CS2Esp:
     def it_entities(self):
         ent_list = pm.r_int64(self.proc, self.mod + Offsets.dwEntityList)
         local = pm.r_int64(self.proc, self.mod + Offsets.dwLocalPlayerController)
+
         for i in range(1, 65):
             try:
                 entry_ptr = pm.r_int64(self.proc, ent_list + (8 * (i & 0x7FFF) >> 9) + 16)
                 controller_ptr = pm.r_int64(self.proc, entry_ptr + 120 * (i & 0x1FF))
                 if controller_ptr == local:
+                    self.localTeam = pm.r_int(self.proc, local + Offsets.m_iTeamNum)
                     continue
                 controller_pawn_ptr = pm.r_int64(self.proc, controller_ptr + Offsets.m_hPlayerPawn)
-                list_entry_ptr = pm.r_int64(self.proc, ent_list + 0x8 * ((controller_pawn_ptr & 0x7FFF) >> 9) + 16)
-                pawn_ptr = pm.r_int64(self.proc, list_entry_ptr + 120 * (controller_pawn_ptr & 0x1FF))
-                weapon_name = self.get_weapon_name(pawn_ptr)
+                listEntryPtr = pm.r_int64(self.proc, ent_list + 0x8 * ((controller_pawn_ptr & 0x7FFF) >> 9) + 16)
+                pawnPtr = pm.r_int64(self.proc, listEntryPtr + 120 * (controller_pawn_ptr & 0x1FF))
+                team = pm.r_int(self.proc, pawnPtr + Offsets.m_iTeamNum)
+                if team != self.localTeam:
+                    weapon_name = self.get_weapon_name(pawnPtr)
+                    yield Entity(controller_ptr, pawnPtr, self.proc, weapon_name=weapon_name)
             except:
                 continue
 
-            yield Entity(controller_ptr, pawn_ptr, self.proc, weapon_name=weapon_name)
-
     def draw_skeleton(self, ent, view_matrix):
-        bone_relations = [(5, 8), (5, 13), (8, 9), (13, 14), (9, 11), (14, 16), 
-                        (5, 0), (0, 23), (0, 26), (23, 24), (26, 27)]
-        
-        for bone_start, bone_end in bone_relations:
-            start_pos = ent.bone_pos(bone_start)
-            end_pos = ent.bone_pos(bone_end)
-            start_screen = pm.world_to_screen(view_matrix, start_pos, 1)
-            end_screen = pm.world_to_screen(view_matrix, end_pos, 1)
+        try:
+            bone_relations = [(5, 8), (5, 13), (8, 9), (13, 14), (9, 11), (14, 16), 
+                            (5, 0), (0, 23), (0, 26), (23, 24), (26, 27)]
+            
+            for bone_start, bone_end in bone_relations:
+                start_pos = ent.bone_pos(bone_start)
+                end_pos = ent.bone_pos(bone_end)
+                start_screen = pm.world_to_screen(view_matrix, start_pos, 1)
+                end_screen = pm.world_to_screen(view_matrix, end_pos, 1)
 
-            if start_screen and end_screen and start_screen['visible'] and end_screen['visible']:
+                if not start_screen or not end_screen:
+                    continue
+
                 pm.draw_line(start_screen["x"], start_screen["y"], 
                             end_screen["x"], end_screen["y"], 
                             Colors.white, 1)
+        except:
+            pass
 
     def run(self):
         pm.overlay_init("Counter-Strike 2", fps=144)
@@ -135,6 +144,6 @@ class CS2Esp:
                             0,
                             Colors.red,
                         )
-                    #if self.show_skeleton:
-                        #self.draw_skeleton(ent, view_matrix)
+                    if self.show_skeleton:
+                        self.draw_skeleton(ent, view_matrix)
             pm.end_drawing()

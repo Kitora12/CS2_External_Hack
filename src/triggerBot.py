@@ -8,7 +8,7 @@ import pyMeow as pm
 class TriggerBot:
     def __init__(self):
         self.active = False
-        self.trigger_key = "x"
+        self.trigger_key = "k"
         self.proc = pm.open_process("cs2.exe")
         self.mod = pm.get_module(self.proc, "client.dll")["base"]
         self.mouse = Controller()
