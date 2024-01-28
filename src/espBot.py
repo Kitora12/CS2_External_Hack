@@ -40,7 +40,7 @@ class CS2Esp:
         ent_list = pm.r_int64(self.proc, self.mod + Offsets.dwEntityList)
         local = pm.r_int64(self.proc, self.mod + Offsets.dwLocalPlayerController)
 
-        for i in range(1, 65):
+        for i in range(16):
             try:
                 entry_ptr = pm.r_int64(self.proc, ent_list + (8 * (i & 0x7FFF) >> 9) + 16)
                 controller_ptr = pm.r_int64(self.proc, entry_ptr + 120 * (i & 0x1FF))
@@ -80,9 +80,9 @@ class CS2Esp:
     def run(self):
         pm.overlay_init("Counter-Strike 2", fps=144)
         while pm.overlay_loop():
-            view_matrix = pm.r_floats(self.proc, self.mod + Offsets.dwViewMatrix, 16)
             pm.begin_drawing()
             pm.draw_fps(0, 0)
+            view_matrix = pm.r_floats(self.proc, self.mod + Offsets.dwViewMatrix, 16)
             for ent in self.it_entities():
                 if ent.wts(view_matrix) and ent.health > 0:
                     color = Colors.cyan if ent.team != 2 else Colors.orange

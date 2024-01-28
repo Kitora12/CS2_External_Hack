@@ -5,19 +5,24 @@ from src.triggerBot import TriggerBot
 from src.bhopBot import bhopBot
 from src.espBot import CS2Esp
 from src.aimBot import AimBot
+from src.defuseBot import DefuseBot
 from src.offsetDumper import *
 
 def main():
     OffsetDumper.fetch_and_set_offsets()
     trigger_bot = TriggerBot()
     esp_bot = CS2Esp()
-    bhop_Bot = bhopBot()
     aim_bot = AimBot()
+    bhop_bot = bhopBot()
+    defuse_bot = DefuseBot()
 
     def toggle_trigger():
         trigger_bot.toggle()
         if trigger_bot.active:
             set_status_text(status_label, "Status: Active")
+            threading.Thread(target=trigger_bot.run, daemon=True).start()
+        else:
+            dpg.set_value(status_label, "Aimbot: Inactive")
 
     def toggle_esp():
         esp_bot.toggle()
@@ -26,10 +31,16 @@ def main():
             threading.Thread(target=esp_bot.run, daemon=True).start()
 
     def toggle_defuse():
-        bhop_Bot.toggle()
-        if bhop_Bot.active:
+        defuse_bot.toggle()
+        if defuse_bot.active:
             set_status_text(status_label, "Status: Active")
-            threading.Thread(target=bhop_Bot.run, daemon=True).start()
+            threading.Thread(target=defuse_bot.run, daemon=True).start()
+
+    def toggle_bhop():
+        bhop_bot.toggle()
+        if bhop_bot.active:
+            set_status_text(status_label, "Status: Active")
+            threading.Thread(target=bhop_bot.run, daemon=True).start()
 
     def update_trigger_key(sender):
         new_key = dpg.get_value(sender)
@@ -60,9 +71,8 @@ def main():
         elif setting == "head":
             esp_bot.show_head = value
 
-    status_label = create_gui(toggle_trigger, update_trigger_key, toggle_esp, toggle_defuse, update_esp_config, toggle_aimbot)
+    status_label = create_gui(toggle_trigger, update_trigger_key, toggle_esp, toggle_defuse, update_esp_config, toggle_aimbot, toggle_bhop)
 
-    threading.Thread(target=trigger_bot.run, daemon=True).start()
     dpg.start_dearpygui()
 
 if __name__ == '__main__':

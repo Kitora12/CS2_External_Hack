@@ -15,7 +15,7 @@ def move_mouse(x, y):
 class AimBot:
     def __init__(self):
         self.active = False
-        self.aim_key = "x"
+        self.aim_key = "k"
         self.proc = pm.open_process("cs2.exe")
         self.mod = pm.get_module(self.proc, "client.dll")["base"]
         self.mouse = Controller()
