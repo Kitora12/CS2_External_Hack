@@ -2,13 +2,12 @@ import pyMeow as pm
 from src.offsetDumper import Offsets
 
 class Entity:
-    def __init__(self, ptr, pawn_ptr, proc, weapon_name):
+    def __init__(self, ptr, pawn_ptr, proc):
         self.ptr = ptr
         self.pawn_ptr = pawn_ptr
         self.proc = proc
         self.pos2d = None
         self.head_pos2d = None
-        self.weapon_name = weapon_name
         
 
     @property
@@ -51,6 +50,7 @@ class Entity:
             else:
                 weaponName = pm.r_string(self.proc, weaponNameAddress, 260)
                 return weaponName[7:] if weaponName.startswith("weapon_") else weaponName
+            
 class Colors:
     orange = pm.get_color("orange")
     black = pm.get_color("black")

@@ -22,13 +22,17 @@ def main():
             set_status_text(status_label, "Status: Active")
             threading.Thread(target=trigger_bot.run, daemon=True).start()
         else:
-            dpg.set_value(status_label, "Aimbot: Inactive")
+            dpg.set_value(status_label, "Status: Inactive")
 
     def toggle_esp():
-        esp_bot.toggle()
-        if esp_bot.active:
-            set_status_text(status_label, "Status: Active")
+        if not esp_bot.active:
+            esp_bot.toggle()
+            set_status_text(status_label, "ESP: Active")
             threading.Thread(target=esp_bot.run, daemon=True).start()
+        else:
+            esp_bot.toggle()
+            set_status_text(status_label, "ESP: Inactive")
+
 
     def toggle_defuse():
         defuse_bot.toggle()
@@ -41,14 +45,17 @@ def main():
         if bhop_bot.active:
             set_status_text(status_label, "Status: Active")
             threading.Thread(target=bhop_bot.run, daemon=True).start()
+        else:
+            dpg.set_value(status_label, "Status: Inactive")
 
-    def update_trigger_key(sender):
-        new_key = dpg.get_value(sender)
+    def update_trigger_key(new_key, trigger_bot):
         if new_key and isinstance(new_key, str) and len(new_key) == 1:
             trigger_bot.set_trigger_key(new_key)
+            set_status_text(status_label, f"Trigger key updated to: {new_key}")
         else:
-            print("Invalid key provided")
+            set_status_text(status_label, "Invalid key provided")
 
+    
     def toggle_aimbot():
         aim_bot.toggle()
         if aim_bot.active:
@@ -64,14 +71,12 @@ def main():
             esp_bot.show_health = value
         elif setting == "name":
             esp_bot.show_name = value
-        elif setting == "weapon":
-            esp_bot.show_weapon = value
         elif setting == "skeleton":
             esp_bot.show_skeleton = value
         elif setting == "head":
             esp_bot.show_head = value
 
-    status_label = create_gui(toggle_trigger, update_trigger_key, toggle_esp, toggle_defuse, update_esp_config, toggle_aimbot, toggle_bhop)
+    status_label = create_gui(toggle_trigger, update_trigger_key, toggle_esp, toggle_defuse, update_esp_config, toggle_aimbot, toggle_bhop, trigger_bot)
 
     dpg.start_dearpygui()
 

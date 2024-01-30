@@ -5,17 +5,16 @@ def on_close():
     dpg.stop_dearpygui()
     sys.exit(0)
 
-def create_gui(toggle_trigger, update_trigger_key, toggle_esp, toggle_defuse, update_esp_config, toggle_aimbot, toggle_bhop):
+def create_gui(toggle_trigger, update_trigger_key, toggle_esp, toggle_defuse, update_esp_config, toggle_aimbot, toggle_bhop, trigger_bot):
     dpg.create_context()
     window_width, window_height = 400, 300
     with dpg.window(label="Cs2 Cheat", width=window_width, height=window_height, no_move=True, no_resize=True, no_title_bar=False, no_scrollbar=True, no_collapse=True):
         with dpg.tab_bar():
             # Onglet Aim
-            with dpg.tab(label="Aim"):
+            with dpg.tab(label="Trigger"):
                 dpg.add_button(label="Toggle Trigger Bot", callback=toggle_trigger)
-                dpg.add_input_text(label="Trigger Key", default_value="k", callback=update_trigger_key)
-                dpg.add_button(label="Update Key", callback=lambda: update_trigger_key("Trigger Key"))
-                dpg.add_button(label="Toggle AimBot", callback=toggle_aimbot)
+                trigger_key_input = dpg.add_input_text(label="Trigger Key", default_value="x", tag="trigger_key_input")
+                dpg.add_button(label="Update Key", callback=lambda: update_trigger_key(dpg.get_value("trigger_key_input"), trigger_bot))
 
             # Onglet ESP
             with dpg.tab(label="ESP"):
@@ -23,14 +22,14 @@ def create_gui(toggle_trigger, update_trigger_key, toggle_esp, toggle_defuse, up
                 dpg.add_checkbox(label="Show Box", default_value=True, callback=lambda s,d: update_esp_config("box", dpg.get_value(s)))
                 dpg.add_checkbox(label="Show Health", default_value=True, callback=lambda s,d: update_esp_config("health", dpg.get_value(s)))
                 dpg.add_checkbox(label="Show Name", default_value=True, callback=lambda s,d: update_esp_config("name", dpg.get_value(s)))
-                dpg.add_checkbox(label="Show Weapon", default_value=True, callback=lambda s,d: update_esp_config("weapon", dpg.get_value(s)))
                 dpg.add_checkbox(label="Show Skeleton", default_value=True, callback=lambda s,d: update_esp_config("skeleton", dpg.get_value(s)))
                 dpg.add_checkbox(label="Show Head", default_value=True, callback=lambda s,d: update_esp_config("Head", dpg.get_value(s)))
 
-            # Onglet Misc
-            
+            # Onglet Aim
             with dpg.tab(label="Aim Bot"):
                 dpg.add_button(label="Toggle AimBot", callback=toggle_aimbot)
+
+            # Onglet Misc
             with dpg.tab(label="Misc"):
                 dpg.add_button(label="Toggle Auto Bhop", callback=toggle_bhop)
                 dpg.add_button(label="Toggle Defuse Bot", callback=toggle_defuse)

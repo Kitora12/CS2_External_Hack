@@ -37,10 +37,10 @@ class TriggerBot:
                     if entityTeam != playerTeam:
                         entityHp = pm.r_int(self.proc, entity + Offsets.m_iHealth)
                         if entityHp > 0:
-                            time.sleep(uniform(0.01, 0.03))
+                            time.sleep(uniform(0.01, 0.02))
                             self.mouse.press(Button.left)
-                            time.sleep(uniform(0.01, 0.05))
+                            time.sleep(uniform(0.01, 0.04))
                             self.mouse.release(Button.left)
-                time.sleep(0.03)
+                time.sleep(0.02)
             else:
                 time.sleep(0.1)

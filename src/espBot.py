@@ -19,17 +19,6 @@ class CS2Esp:
     def toggle(self):
         self.active = not self.active
 
-    def get_weapon_name(self, player_pawn_ptr):
-            C_CSWeaponBase = pm.r_int64(self.proc, player_pawn_ptr + Offsets.m_pClippingWeapon)
-            weaponData = pm.r_int64(self.proc, C_CSWeaponBase + Offsets.m_nSubclassID + 0x8)
-            weaponNameAddress = pm.r_int64(self.proc, weaponData + Offsets.m_szName)
-
-            if not weaponNameAddress:
-                return "NULL"
-            else:
-                weaponName = pm.r_string(self.proc, weaponNameAddress, 260)
-                return weaponName[7:] if weaponName.startswith("weapon_") else weaponName
-
     def update_config(self, show_box=True, show_health=True, show_name=True, show_weapon=True):
         self.show_box = show_box
         self.show_health = show_health
@@ -37,43 +26,50 @@ class CS2Esp:
         self.show_weapon = show_weapon
 
     def it_entities(self):
-        ent_list = pm.r_int64(self.proc, self.mod + Offsets.dwEntityList)
+        entList = pm.r_int64(self.proc, self.mod + Offsets.dwEntityList)
         local = pm.r_int64(self.proc, self.mod + Offsets.dwLocalPlayerController)
-
-        for i in range(16):
+        
+        for i in range(1, 65):
             try:
-                entry_ptr = pm.r_int64(self.proc, ent_list + (8 * (i & 0x7FFF) >> 9) + 16)
-                controller_ptr = pm.r_int64(self.proc, entry_ptr + 120 * (i & 0x1FF))
-                if controller_ptr == local:
+                entryPtr = pm.r_int64(self.proc, entList + (8 * (i & 0x7FFF) >> 9) + 16)
+                controllerPtr = pm.r_int64(self.proc, entryPtr + 120 * (i & 0x1FF))
+                if controllerPtr == local:
                     self.localTeam = pm.r_int(self.proc, local + Offsets.m_iTeamNum)
                     continue
-                controller_pawn_ptr = pm.r_int64(self.proc, controller_ptr + Offsets.m_hPlayerPawn)
-                listEntryPtr = pm.r_int64(self.proc, ent_list + 0x8 * ((controller_pawn_ptr & 0x7FFF) >> 9) + 16)
-                pawnPtr = pm.r_int64(self.proc, listEntryPtr + 120 * (controller_pawn_ptr & 0x1FF))
-                team = pm.r_int(self.proc, pawnPtr + Offsets.m_iTeamNum)
-                if team != self.localTeam:
-                    weapon_name = self.get_weapon_name(pawnPtr)
-                    yield Entity(controller_ptr, pawnPtr, self.proc, weapon_name=weapon_name)
+                controllerPawnPtr = pm.r_int64(self.proc, controllerPtr + Offsets.m_hPlayerPawn)
+                listEntryPtr = pm.r_int64(self.proc, entList + 0x8 * ((controllerPawnPtr & 0x7FFF) >> 9) + 16)
+                pawnPtr = pm.r_int64(self.proc, listEntryPtr + 120 * (controllerPawnPtr & 0x1FF))
             except:
                 continue
+            yield Entity(controllerPtr, pawnPtr, self.proc)
 
-    def draw_skeleton(self, ent, view_matrix):
+    def draw_skeleton(self, ent, viewMatrix):
         try:
-            bone_relations = [(5, 8), (5, 13), (8, 9), (13, 14), (9, 11), (14, 16), 
-                            (5, 0), (0, 23), (0, 26), (23, 24), (26, 27)]
-            
-            for bone_start, bone_end in bone_relations:
-                start_pos = ent.bone_pos(bone_start)
-                end_pos = ent.bone_pos(bone_end)
-                start_screen = pm.world_to_screen(view_matrix, start_pos, 1)
-                end_screen = pm.world_to_screen(view_matrix, end_pos, 1)
+            cou = pm.world_to_screen(viewMatrix, ent.bone_pos(5), 1)
+            shoulderR = pm.world_to_screen(viewMatrix, ent.bone_pos(8), 1)
+            shoulderL = pm.world_to_screen(viewMatrix, ent.bone_pos(13), 1)
+            brasR = pm.world_to_screen(viewMatrix, ent.bone_pos(9), 1)
+            brasL = pm.world_to_screen(viewMatrix, ent.bone_pos(14), 1)
+            handR = pm.world_to_screen(viewMatrix, ent.bone_pos(11), 1)
+            handL = pm.world_to_screen(viewMatrix, ent.bone_pos(16), 1)
+            waist = pm.world_to_screen(viewMatrix, ent.bone_pos(0), 1)
+            kneesR = pm.world_to_screen(viewMatrix, ent.bone_pos(23), 1)
+            kneesL = pm.world_to_screen(viewMatrix, ent.bone_pos(26), 1)
+            feetR = pm.world_to_screen(viewMatrix, ent.bone_pos(24), 1)
+            feetL = pm.world_to_screen(viewMatrix, ent.bone_pos(27), 1)
 
-                if not start_screen or not end_screen:
-                    continue
-
-                pm.draw_line(start_screen["x"], start_screen["y"], 
-                            end_screen["x"], end_screen["y"], 
-                            Colors.white, 1)
+            # pm.draw_circle_lines(ent.headPos2d["x"], ent.headPos2d["y"], center / 3, Colors.white) # looks bad?
+            pm.draw_line(cou["x"], cou["y"], shoulderR["x"], shoulderR["y"], Colors.white, 1)
+            pm.draw_line(cou["x"], cou["y"], shoulderL["x"], shoulderL["y"], Colors.white, 1)
+            pm.draw_line(brasL["x"], brasL["y"], shoulderL["x"], shoulderL["y"], Colors.white, 1)
+            pm.draw_line(brasR["x"], brasR["y"], shoulderR["x"], shoulderR["y"], Colors.white, 1)
+            pm.draw_line(brasR["x"], brasR["y"], handR["x"], handR["y"], Colors.white, 1)
+            pm.draw_line(brasL["x"], brasL["y"], handL["x"], handL["y"], Colors.white, 1)
+            pm.draw_line(cou["x"], cou["y"], waist["x"], waist["y"], Colors.white, 1)
+            pm.draw_line(kneesR["x"], kneesR["y"], waist["x"], waist["y"], Colors.white, 1)
+            pm.draw_line(kneesL["x"], kneesL["y"], waist["x"], waist["y"], Colors.white, 1)
+            pm.draw_line(kneesL["x"], kneesL["y"], feetL["x"], feetL["y"], Colors.white, 1)
+            pm.draw_line(kneesR["x"], kneesR["y"], feetR["x"], feetR["y"], Colors.white, 1)
         except:
             pass
 
@@ -83,8 +79,13 @@ class CS2Esp:
             pm.begin_drawing()
             pm.draw_fps(0, 0)
             view_matrix = pm.r_floats(self.proc, self.mod + Offsets.dwViewMatrix, 16)
+
+            if self.localTeam is None:
+                local = pm.r_int64(self.proc, self.mod + Offsets.dwLocalPlayerController)
+                self.localTeam = pm.r_int(self.proc, local + Offsets.m_iTeamNum)
+
             for ent in self.it_entities():
-                if ent.wts(view_matrix) and ent.health > 0:
+                if ent.wts(view_matrix) and ent.health > 0 and ent.team != self.localTeam:
                     color = Colors.cyan if ent.team != 2 else Colors.orange
                     head = ent.pos2d["y"] - ent.head_pos2d["y"]
                     width = head / 2
@@ -99,38 +100,21 @@ class CS2Esp:
                             color,
                             1.2,
                         )
-                        pm.draw_rectangle_lines(
-                            ent.head_pos2d["x"] - center,
-                            ent.head_pos2d["y"] - center / 2,
-                            width,
-                            head + center / 2,
-                            color,
-                            1.2,
-                        )
                     if self.show_health:
                         pm.draw_rectangle_rounded(
-                                ent.head_pos2d["x"] - center - 10,
-                                ent.head_pos2d["y"] + (head * (100 - ent.health) / 100),
-                                3,
-                                head - (head * (100 - ent.health) / 100),
-                                head + center / 2,
-                                1,
-                                Colors.green,
-                            )
+                            ent.head_pos2d["x"] - center - 10,
+                            ent.head_pos2d["y"] + (head * (100 - ent.health) / 100),
+                            3,
+                            head - (head * (100 - ent.health) / 100),
+                            0,
+                            1,
+                            Colors.green,
+                        )
                     if self.show_name:
                         pm.draw_text(
-                                ent.name,
-                                ent.head_pos2d["x"] - pm.measure_text(ent.name, 7) // 2,
-                                ent.head_pos2d["y"] - center / 2,
-                                7,
-                                Colors.white,
-                            )
-                    if self.show_weapon:
-                        weapon_text = f"Weapon: {ent.weapon_name}"
-                        pm.draw_text(
-                            weapon_text,
-                            ent.head_pos2d["x"] - pm.measure_text(weapon_text, 7) // 2,
-                            ent.head_pos2d["y"] - center / 2 - 20,
+                            ent.name,
+                            ent.head_pos2d["x"] - pm.measure_text(ent.name, 7) // 2,
+                            ent.head_pos2d["y"] - center / 2,
                             7,
                             Colors.white,
                         )
