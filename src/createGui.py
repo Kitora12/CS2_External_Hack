@@ -5,11 +5,13 @@ def on_close():
     dpg.stop_dearpygui()
     sys.exit(0)
 
-def create_gui(toggle_trigger, update_trigger_key, toggle_esp, toggle_defuse, update_esp_config, toggle_aimbot, toggle_bhop, trigger_bot):
+def create_gui(toggle_trigger, update_trigger_key, toggle_esp, toggle_noflash, update_esp_config, toggle_aimbot, toggle_bhop, trigger_bot, toggle_all):
     dpg.create_context()
     window_width, window_height = 400, 300
     with dpg.window(label="Cs2 Cheat", width=window_width, height=window_height, no_move=True, no_resize=True, no_title_bar=False, no_scrollbar=True, no_collapse=True):
         with dpg.tab_bar():
+            with dpg.tab(label="General"):
+                dpg.add_button(label="Toggle All Features", callback=toggle_all)
             # Onglet Aim
             with dpg.tab(label="Trigger"):
                 dpg.add_button(label="Toggle Trigger Bot", callback=toggle_trigger)
@@ -32,7 +34,7 @@ def create_gui(toggle_trigger, update_trigger_key, toggle_esp, toggle_defuse, up
             # Onglet Misc
             with dpg.tab(label="Misc"):
                 dpg.add_button(label="Toggle Auto Bhop", callback=toggle_bhop)
-                dpg.add_button(label="Toggle Defuse Bot", callback=toggle_defuse)
+                dpg.add_button(label="Toggle No Flash", callback=toggle_noflash)
 
         status_label = dpg.add_text("Status: Inactive")
 
