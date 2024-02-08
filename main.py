@@ -12,14 +12,13 @@ def main():
     OffsetDumper.fetch_and_set_offsets()
     trigger_bot = TriggerBot()
     esp_bot = CS2Esp()
-    aim_bot = AimBot()
+    aim_bot = None
     bhop_bot = bhopBot()
     no_flash = NoFlash()
 
     def toggle_all():
         toggle_trigger()
-        esp_bot.toggle()
-        set_status_text(status_label, "ESP: Active" if esp_bot.active else "ESP: Inactive")
+        toggle_esp()
         toggle_noflash()
         toggle_bhop()
         set_status_text(status_label, "All Features: Toggled")
