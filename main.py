@@ -4,7 +4,6 @@ from src.createGui import *
 from src.triggerBot import TriggerBot
 from src.bhopBot import bhopBot
 from src.espBot import CS2Esp
-from src.aimBot import AimBot
 from src.noFlash import NoFlash
 from src.offsetDumper import *
 
@@ -12,7 +11,6 @@ def main():
     OffsetDumper.fetch_and_set_offsets()
     trigger_bot = TriggerBot()
     esp_bot = CS2Esp()
-    aim_bot = None
     bhop_bot = bhopBot()
     no_flash = NoFlash()
 
@@ -64,15 +62,6 @@ def main():
         else:
             set_status_text(status_label, "Invalid key provided")
 
-    
-    def toggle_aimbot():
-        aim_bot.toggle()
-        if aim_bot.active:
-            dpg.set_value(status_label, "Aimbot: Active")
-            threading.Thread(target=aim_bot.run, daemon=True).start()
-        else:
-            dpg.set_value(status_label, "Aimbot: Inactive")
-
     def update_esp_config(setting, value):
         if setting == "box":
             esp_bot.show_box = value
@@ -85,7 +74,7 @@ def main():
         elif setting == "head":
             esp_bot.show_head = value
 
-    status_label = create_gui(toggle_trigger, update_trigger_key, toggle_esp, toggle_noflash, update_esp_config, toggle_aimbot, toggle_bhop, trigger_bot, toggle_all)
+    status_label = create_gui(toggle_trigger, update_trigger_key, toggle_esp, toggle_noflash, update_esp_config, toggle_bhop, trigger_bot, toggle_all)
 
     dpg.start_dearpygui()
 

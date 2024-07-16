@@ -1,6 +1,5 @@
 import keyboard, time
 from pynput.mouse import Controller, Button
-from win32gui import GetWindowText, GetForegroundWindow
 from random import uniform
 from src.offsetDumper import Offsets
 import pyMeow as pm

@@ -3,3 +3,5 @@ pynput
 pywin32
 requests
 dearpygui
+pyMeow
+win32api

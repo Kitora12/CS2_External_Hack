@@ -58,7 +58,6 @@ class CS2Esp:
             feetR = pm.world_to_screen(viewMatrix, ent.bone_pos(24), 1)
             feetL = pm.world_to_screen(viewMatrix, ent.bone_pos(27), 1)
 
-            # pm.draw_circle_lines(ent.headPos2d["x"], ent.headPos2d["y"], center / 3, Colors.white) # looks bad?
             pm.draw_line(cou["x"], cou["y"], shoulderR["x"], shoulderR["y"], Colors.white, 1)
             pm.draw_line(cou["x"], cou["y"], shoulderL["x"], shoulderL["y"], Colors.white, 1)
             pm.draw_line(brasL["x"], brasL["y"], shoulderL["x"], shoulderL["y"], Colors.white, 1)
